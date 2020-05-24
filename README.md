@@ -36,3 +36,17 @@ Defaults to False.
     ckan.fortify.enable_anti_csrf_tokens = True
 
 Defaults to False.
+
+### Add a password policy to CKAN
+
+    ckan.fortify.enable_password_policy = True
+
+Defaults to False.
+
+    ckan.fortify.password_policy.min_length = 12
+
+Defaults to 12
+
+    ckan.fortify.password_policy.allow_repeated_chars = True
+
+Defaults to true (i.e. sequentially repeating characters allowed in passwords)

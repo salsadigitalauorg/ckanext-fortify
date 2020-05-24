@@ -1,5 +1,6 @@
 import anti_csrf
 import ckan.authz as authz
+import ckan.logic.schema
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import mimetypes
@@ -7,6 +8,7 @@ import mimetypes
 from ckan.common import config, response
 from ckan.controllers.package import PackageController
 from ckan.logic import NotAuthorized, NotFound, ValidationError, get_action
+from ckanext.fortify import schema
 
 core_resource_download = PackageController.resource_download
 
@@ -30,6 +32,13 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
         if toolkit.asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
             PackageController.resource_download = self.resource_download
+
+        if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
+            # Monkeypatching all user schemas in order to enforce a stronger password
+            ckan.logic.schema.default_user_schema = schema.default_user_schema
+            ckan.logic.schema.user_new_form_schema = schema.user_new_form_schema
+            ckan.logic.schema.user_edit_form_schema = schema.user_edit_form_schema
+            ckan.logic.schema.default_update_user_schema = schema.default_update_user_schema
 
     # IOrganizationController
 
@@ -71,3 +80,9 @@ class FortifyPlugin(plugins.SingletonPlugin):
         def after_map(self, map):
             anti_csrf.intercept_csrf()
             return map
+
+    if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
+
+        def get_password_error_message(self):
+            from ckanext.fortify import validators
+            return [validators.MIN_LEN_ERROR.format(validators.MIN_PASSWORD_LENGTH), validators.REPEATING_CHAR_ERROR]
