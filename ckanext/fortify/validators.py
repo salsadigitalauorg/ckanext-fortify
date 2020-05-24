@@ -3,7 +3,7 @@ from ckan.common import _, config
 from ckan.lib.navl.dictization_functions import Missing, Invalid
 from paste.deploy.converters import asbool
 
-MIN_PASSWORD_LENGTH = config.get('ckan.fortify.password_policy.min_length', 12)
+MIN_PASSWORD_LENGTH = int(config.get('ckan.fortify.password_policy.min_length', 12))
 MIN_LEN_ERROR = (
     'Your password must be {} characters or longer and contain at least 1 character '
     'from each of the following character sets: uppercase characters, lowercase '
