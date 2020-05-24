@@ -30,3 +30,9 @@ Defaults to False.
     ckan.fortify.check_parent_org_allowed = True
 
 Defaults to False.
+
+### Add an anti-CSRF token to all forms and important action buttons
+
+    ckan.fortify.enable_anti_csrf_tokens = True
+
+Defaults to False.

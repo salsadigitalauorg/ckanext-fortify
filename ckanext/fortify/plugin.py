@@ -1,3 +1,4 @@
+import anti_csrf
 import ckan.authz as authz
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
@@ -19,7 +20,11 @@ class FortifyPlugin(plugins.SingletonPlugin):
     if toolkit.asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
         plugins.implements(plugins.IResourceController, inherit=True)
 
+    if toolkit.asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)):
+        plugins.implements(plugins.IRoutes, inherit=True)
+
     # IConfigurer
+
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
 
@@ -27,6 +32,7 @@ class FortifyPlugin(plugins.SingletonPlugin):
             PackageController.resource_download = self.resource_download
 
     # IOrganizationController
+
     if toolkit.asbool(config.get('ckan.fortify.check_parent_org_allowed', False)):
 
         def create(self, entity):
@@ -57,3 +63,11 @@ class FortifyPlugin(plugins.SingletonPlugin):
                 pass
 
             return core_resource_download(PackageController(), id, resource_id, filename)
+
+    # IRoutes
+
+    if toolkit.asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)):
+
+        def after_map(self, map):
+            anti_csrf.intercept_csrf()
+            return map
