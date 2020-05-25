@@ -48,6 +48,10 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
         def create(self, entity):
             user = toolkit.c.userobj
+
+            if authz.is_sysadmin(user.name):
+                return
+
             parents = entity.get_parent_group_hierarchy('organization')
 
             if parents:
