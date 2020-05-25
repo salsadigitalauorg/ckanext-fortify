@@ -19,7 +19,9 @@ Add the `fortify` extension to `ckan.plugins` in your CKAN `.ini` file:
 
 Enable each feature through the `ckan.plugins` config setting in your CKAN `.ini` file: 
 
-### Force uploaded HTML resource files to download  
+### Force uploaded HTML resource files to download
+
+Prevent Stored XSS attacks by forcing resource downloads of HTML files as opposed to viewing them in the browser. 
 
     ckan.fortify.force_html_resource_downloads = True
 
@@ -27,11 +29,16 @@ Defaults to False.
 
 ### Check a user belongs to parent organisation when adding child organisation
 
+When using the `ckanext-hierarchy` extension it's possible to inject a parent organisation into the create new
+organisation form that the logged in user does not belong to. This prevents that behaviour by checking in the back-end 
+that the user belongs to the organisation as an admin when creating a new child organisation. 
+
     ckan.fortify.check_parent_org_allowed = True
 
 Defaults to False.
 
 ### Add an anti-CSRF token to all forms and important action buttons
+
 
     ckan.fortify.enable_anti_csrf_tokens = True
 
@@ -49,4 +56,4 @@ Defaults to 12
 
     ckan.fortify.password_policy.allow_repeated_chars = True
 
-Defaults to true (i.e. sequentially repeating characters allowed in passwords)
+Defaults to true (i.e. sequentially repeating characters ARE allowed in passwords by default)
