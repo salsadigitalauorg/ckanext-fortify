@@ -1,0 +1,19 @@
+{% ckan_extends %}
+
+{% block flash_inner %}
+
+    {% for message in h.flash.pop_messages() | list %}
+      <div class="alert alert-warning fade in {{ message.category }}">
+        {% if 'Your password must' in h.literal(message) or 'Passwords must not' in h.literal(message) %}
+          <ul>
+          {% for message in h.get_password_error_message() %}
+              <li>{{ message }}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          {{ h.literal(message) }}
+        {% endif %}
+      </div>
+    {% endfor %}
+
+{% endblock %}

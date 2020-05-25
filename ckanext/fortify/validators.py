@@ -1,5 +1,5 @@
 import string
-from ckan.common import _, config
+from ckan.common import _, c, config
 from ckan.lib.navl.dictization_functions import Missing, Invalid
 from paste.deploy.converters import asbool
 
@@ -13,19 +13,23 @@ REPEATING_CHAR_ERROR = 'Passwords must not contain repeating values.'
 
 
 def user_password_validator(key, data, errors, context):
+    # Don't perform this validation under certain conditions, i.e. adding a new member to an organisation
+    if c.controller in ['organization'] and c.action in ['member_new']:
+        return
+
     value = data[key]
 
     if isinstance(value, Missing):
-        pass  # Already handeled in core
+        pass  # Already handled in core
     elif not isinstance(value, basestring):
         raise Invalid(_('Passwords must be strings.'))
     elif value == '':
         pass  # Already handled in core
     else:
         allow_repeated_chars = asbool(config.get('ckan.fortify.password_policy.allow_repeated_chars', True))
-        if allow_repeated_chars:
-            for c in value:
-                if c * 2 in value:
+        if not allow_repeated_chars:
+            for character in value:
+                if character * 2 in value:
                     raise Invalid(_(REPEATING_CHAR_ERROR))
         # NZISM compliant password rules
         rules = [

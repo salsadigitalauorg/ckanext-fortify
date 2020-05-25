@@ -8,6 +8,7 @@ import mimetypes
 from ckan.common import config, response
 from ckan.controllers.package import PackageController
 from ckan.logic import NotAuthorized, NotFound, ValidationError, get_action
+from ckanext.fortify import helpers
 from ckanext.fortify import schema
 
 core_resource_download = PackageController.resource_download
@@ -15,6 +16,7 @@ core_resource_download = PackageController.resource_download
 
 class FortifyPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.ITemplateHelpers)
 
     if toolkit.asbool(config.get('ckan.fortify.check_parent_org_allowed', False)):
         plugins.implements(plugins.IOrganizationController, inherit=True)
@@ -81,8 +83,9 @@ class FortifyPlugin(plugins.SingletonPlugin):
             anti_csrf.intercept_csrf()
             return map
 
-    if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
+    # ITemplateHelpers
 
-        def get_password_error_message(self):
-            from ckanext.fortify import validators
-            return [validators.MIN_LEN_ERROR.format(validators.MIN_PASSWORD_LENGTH), validators.REPEATING_CHAR_ERROR]
+    def get_helpers(self):
+        return {
+            'get_password_error_message': helpers.get_password_error_message
+        }
