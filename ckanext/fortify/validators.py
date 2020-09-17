@@ -1,5 +1,11 @@
+import logging
+import string
+
 from six import string_types
-from ckan.plugins.toolkit import _, g, config, missing, Invalid, asbool
+from ckan.plugins.toolkit import _, g, config, Invalid, asbool, get_endpoint
+from ckan.lib.navl.dictization_functions import Missing
+
+log = logging.getLogger(__name__)
 
 MIN_PASSWORD_LENGTH = int(config.get('ckan.fortify.password_policy.min_length', 12))
 MIN_LEN_ERROR = (
@@ -12,12 +18,12 @@ REPEATING_CHAR_ERROR = 'Passwords must not contain repeating values.'
 
 def user_password_validator(key, data, errors, context):
     # Don't perform this validation under certain conditions, i.e. adding a new member to an organisation
-    if g.controller in ['organization'] and g.action in ['member_new']:
+    if get_endpoint()[0] in ['group'] and get_endpoint()[1] in ['member_new']:
         return
 
     value = data[key]
 
-    if isinstance(value, missing):
+    if isinstance(value, Missing):
         pass  # Already handled in core
     elif not isinstance(value, string_types):
         raise Invalid(_('Passwords must be strings.'))
