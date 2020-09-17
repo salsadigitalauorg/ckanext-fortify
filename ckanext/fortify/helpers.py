@@ -1,9 +1,8 @@
 import ckan.authz as authz
 import logging
 
-from ckan.common import config
+from ckan.plugins.toolkit import config, asbool
 from ckanext.fortify import validators
-from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 

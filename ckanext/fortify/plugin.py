@@ -1,17 +1,21 @@
-import anti_csrf
 import ckan.authz as authz
 import ckan.logic.schema
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import mimetypes
+import logging
 
-from ckan.common import config, response
-from ckan.controllers.package import PackageController
-from ckan.logic import NotAuthorized, NotFound, ValidationError, get_action
-from ckanext.fortify import helpers
-from ckanext.fortify import schema
+from flask import make_response
+from ckan.views.resource import download as core_resource_download
+from ckanext.fortify import helpers, schema, anti_csrf
 
-core_resource_download = PackageController.resource_download
+config = toolkit.config
+NotAuthorized = toolkit.NotAuthorized
+NotFound = toolkit.ObjectNotFound
+ValidationError = toolkit.ValidationError
+get_action = toolkit.get_action
+response = make_response
+log = logging.getLogger(__name__)
 
 
 class FortifyPlugin(plugins.SingletonPlugin):
@@ -33,7 +37,8 @@ class FortifyPlugin(plugins.SingletonPlugin):
         toolkit.add_template_directory(config_, 'templates')
 
         if toolkit.asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
-            PackageController.resource_download = self.resource_download
+            log.debug('force_html_resource_downloads')
+            core_resource_download = self.resource_download
 
         if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
             # Monkeypatching all user schemas in order to enforce a stronger password
@@ -67,8 +72,9 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
     if toolkit.asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
 
-        def resource_download(self, id, resource_id, filename=None):
+        def resource_download(self, package_type, id, resource_id, filename=None):
             try:
+                log.debug('resource_download: {}'.format(resource_id))
                 resource = get_action('resource_show')({}, {'id': resource_id})
                 content_type, content_enc = mimetypes.guess_type(
                     resource.get('url', ''))
@@ -76,8 +82,9 @@ class FortifyPlugin(plugins.SingletonPlugin):
                     response.headers['Content-disposition'] = 'attachment'
             except (NotFound, NotAuthorized):
                 pass
-
-            return core_resource_download(PackageController(), id, resource_id, filename)
+            log.debug('resource_download: {}'.format(content_type))
+            log.debug('resource_download: {}'.format(response.headers))
+            return core_resource_download(package_type, id, resource_id, filename)
 
     # IRoutes
 

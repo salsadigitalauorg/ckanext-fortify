@@ -9,19 +9,24 @@ import hashlib
 import hmac
 import random
 import re
-from re import IGNORECASE, MULTILINE
 import time
-import urllib
+import ckan.plugins.toolkit as toolkit
+
 from logging import getLogger
-import urlparse
+from re import IGNORECASE, MULTILINE
+from six.moves.urllib import parse
+from flask import make_response
+from six import text_type
 
-from ckan.common import config, request, response, g
-import ckan.lib.base as base
-
+config = toolkit.config
+request = toolkit.request
+abort = toolkit.abort
+response = make_response
+g = toolkit.g
 LOG = getLogger(__name__)
+RAW_RENDER_JINJA = toolkit.render
 
-RAW_RENDER_JINJA = base.render_jinja2
-RAW_BEFORE = base.BaseController.__before__
+# RAW_BEFORE = base.BaseController.__before__
 
 """ Used as the cookie name and input field name.
 """
@@ -134,7 +139,7 @@ def validate_token(token):
     if 'hash' not in token_values:
         return False
 
-    expected_hmac = unicode(get_digest(token_values['message']))
+    expected_hmac = text_type(get_digest(token_values['message']))
     if not hmac.compare_digest(expected_hmac, token_values['hash']):
         return False
 
@@ -160,7 +165,7 @@ def read_token_values(token):
 
     return {
         "message": message,
-        "hash": unicode(parts[0]),
+        "hash": text_type(parts[0]),
         "timestamp": int(message_parts[0]),
         "nonce": int(message_parts[1]),
         "username": message_parts[2]
@@ -238,7 +243,7 @@ def create_response_token():
 def _set_response_token_cookie(token):
     """ Add a generated token cookie to the HTTP response.
     """
-    site_url = urlparse.urlparse(config.get('ckan.site_url', ''))
+    site_url = parse.urlparse(config.get('ckan.site_url', ''))
     if site_url.scheme == 'https':
         LOG.debug("Securing CSRF token cookie for site %s", site_url)
         secure_cookies = True
@@ -259,7 +264,7 @@ def is_request_exempt():
 def anti_csrf_before(obj, action, **params):
     """ Wrap the core pre-rendering function to require tokens on applicable requests.
     """
-    RAW_BEFORE(obj, action)
+    # RAW_BEFORE(obj, action)
 
     if not is_request_exempt() and _get_cookie_token() != _get_post_token():
         csrf_fail("Could not match session token with form token")
@@ -310,5 +315,5 @@ def _get_post_token():
 def intercept_csrf():
     """ Monkey-patch the core rendering methods to apply our CSRF tokens.
     """
-    base.render_jinja2 = anti_csrf_render_jinja2
-    base.BaseController.__before__ = anti_csrf_before
+    toolkit.render = anti_csrf_render_jinja2
+    # base.BaseController.__before__ = anti_csrf_before
