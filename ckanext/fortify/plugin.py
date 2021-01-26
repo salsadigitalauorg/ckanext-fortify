@@ -1,5 +1,4 @@
 import ckan.authz as authz
-import ckan.logic.schema
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import mimetypes
@@ -7,7 +6,8 @@ import logging
 
 from flask import make_response
 from ckan.views.resource import download as core_resource_download
-from ckanext.fortify import helpers, schema, anti_csrf
+from ckan.views.user import PerformResetView as PerformResetView
+from ckanext.fortify import helpers, anti_csrf, validators, blueprint
 
 config = toolkit.config
 NotAuthorized = toolkit.NotAuthorized
@@ -20,7 +20,6 @@ log = logging.getLogger(__name__)
 
 class FortifyPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
-    plugins.implements(plugins.ITemplateHelpers)
 
     if toolkit.asbool(config.get('ckan.fortify.check_parent_org_allowed', False)):
         plugins.implements(plugins.IOrganizationController, inherit=True)
@@ -31,6 +30,10 @@ class FortifyPlugin(plugins.SingletonPlugin):
     if toolkit.asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)):
         plugins.implements(plugins.IRoutes, inherit=True)
 
+    if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
+        plugins.implements(plugins.IBlueprint)
+        plugins.implements(plugins.IValidators)
+
     # IConfigurer
 
     def update_config(self, config_):
@@ -39,13 +42,6 @@ class FortifyPlugin(plugins.SingletonPlugin):
         if toolkit.asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
             log.debug('force_html_resource_downloads')
             core_resource_download = self.resource_download
-
-        if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
-            # Monkeypatching all user schemas in order to enforce a stronger password
-            ckan.logic.schema.default_user_schema = schema.default_user_schema
-            ckan.logic.schema.user_new_form_schema = schema.user_new_form_schema
-            ckan.logic.schema.user_edit_form_schema = schema.user_edit_form_schema
-            ckan.logic.schema.default_update_user_schema = schema.default_update_user_schema
 
     # IOrganizationController
 
@@ -94,9 +90,14 @@ class FortifyPlugin(plugins.SingletonPlugin):
             anti_csrf.intercept_csrf()
             return map
 
-    # ITemplateHelpers
+    if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
 
-    def get_helpers(self):
-        return {
-            'get_password_error_message': helpers.get_password_error_message
-        }
+        # IBlueprint
+        def get_blueprint(self):
+            return blueprint.fortify
+
+        # IValidators
+        def get_validators(self):
+            return {
+                'user_password_validator': validators.user_password_validator
+            }
