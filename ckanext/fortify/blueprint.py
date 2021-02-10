@@ -9,9 +9,9 @@ from flask import Blueprint
 from flask.views import MethodView
 from six import text_type
 from ckanext.fortify import validators
+from ckanext.fortify.csrf import anti_csrf3
 
 log = logging.getLogger(__name__)
-fortify = Blueprint(u'fortify', __name__)
 get_action = toolkit.get_action
 NotAuthorized = toolkit.NotAuthorized
 NotFound = toolkit.ObjectNotFound
@@ -22,6 +22,24 @@ render = toolkit.render
 g = toolkit.g
 h = toolkit.h
 _ = toolkit._
+
+fortify = Blueprint(u'fortify', __name__)
+
+
+@fortify.before_app_request
+def before_app_request():
+    if not anti_csrf3.is_valid():
+        log.debug("Invalid CSRF attempt.")
+        extra_vars = {'code': [403], 'content': 'Your form submission could not be validated.'}
+        return render('error_document_template.html', extra_vars=extra_vars)
+
+
+@fortify.after_app_request
+def after_app_request(response):
+    '''Update every Flask response with CSRF token.
+    '''
+    anti_csrf3.after_request_function(response)
+    return response
 
 
 def _get_form_password():

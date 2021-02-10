@@ -7,7 +7,7 @@ import logging
 from flask import make_response
 from ckan.views.resource import download as core_resource_download
 from ckan.views.user import PerformResetView as PerformResetView
-from ckanext.fortify import helpers, anti_csrf, validators, blueprint
+from ckanext.fortify import helpers, validators, blueprint
 
 config = toolkit.config
 NotAuthorized = toolkit.NotAuthorized
@@ -84,11 +84,11 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
     # IRoutes
 
-    if toolkit.asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)):
+    # if toolkit.asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)):
 
-        def after_map(self, map):
-            anti_csrf.intercept_csrf()
-            return map
+    #     def after_map(self, map):
+    #         anti_csrf.intercept_csrf()
+    #         return map
 
     if toolkit.asbool(config.get('ckan.fortify.enable_password_policy', False)):
 
