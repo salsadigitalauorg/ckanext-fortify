@@ -312,8 +312,8 @@ def _get_post_token():
     return request.token
 
 
-def intercept_csrf():
-    """ Monkey-patch the core rendering methods to apply our CSRF tokens.
-    """
-    toolkit.render = anti_csrf_render_jinja2
-    # base.BaseController.__before__ = anti_csrf_before
+# def intercept_csrf():
+#     """ Monkey-patch the core rendering methods to apply our CSRF tokens.
+#     """
+#     toolkit.render = anti_csrf_render_jinja2
+#     # base.BaseController.__before__ = anti_csrf_before
