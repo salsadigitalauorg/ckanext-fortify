@@ -1,5 +1,6 @@
-import pdb
 import ckan.lib.base as base
+from six.moves.urllib import parse
+
 import re
 from re import IGNORECASE, MULTILINE
 import logging
@@ -64,7 +65,7 @@ def _apply_token(html, token):
             separator = '&'
         else:
             separator = '?'
-        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '=' + str(token) + link_match.group(3)
+        return link_match.group(1) + separator + TOKEN_FIELD_NAME + '=' + token + link_match.group(3)
 
     return CONFIRM_LINK_REVERSED.sub(insert_link_token, CONFIRM_LINK.sub(insert_link_token, POST_FORM.sub(insert_form_token, html)))
 
@@ -102,9 +103,16 @@ def _get_response_token(request, response):
 
 
 def create_response_token(response):
+    site_url = parse.urlparse(config.get('ckan.site_url', ''))
     import binascii, os
-    token = binascii.hexlify(os.urandom(32))
-    response.set_cookie(TOKEN_FIELD_NAME, token, secure=True, httponly=True)
+    token = binascii.hexlify(os.urandom(32)).decode('ascii')
+    if site_url.scheme == 'https':
+        log.debug("Securing CSRF token cookie for site %s", site_url)
+        secure_cookies = True
+    else:
+        log.warn("Site %s is not secure! CSRF token may be exposed!", site_url)
+        secure_cookies = False
+    response.set_cookie(TOKEN_FIELD_NAME, token, secure=secure_cookies, httponly=True)
     response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=True, httponly=True)
     return token
 
