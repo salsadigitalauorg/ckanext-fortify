@@ -26,7 +26,7 @@ but we'll set a new one for next time.
 TOKEN_FRESHNESS_COOKIE_NAME = 'token-fresh'
 
 # We need to edit confirm-action links, which get intercepted by JavaScript,
-#regardless of which order their 'data-module' and 'href' attributes appear.
+# regardless of which order their 'data-module' and 'href' attributes appear.
 CONFIRM_LINK = re.compile(r'(<a [^>]*data-module=["\']confirm-action["\'][^>]*href=["\']([^"\']+))(["\'])', IGNORECASE | MULTILINE)
 CONFIRM_LINK_REVERSED = re.compile(r'(<a [^>]*href=["\']([^"\']+))(["\'][^>]*data-module=["\']confirm-action["\'])', IGNORECASE | MULTILINE)
 
@@ -39,14 +39,13 @@ POST_FORM = re.compile(r'(<form [^>]*method=["\']post["\'][^>]*>)([^<]*\s<)', IG
 
 """The format of the token HTML field.
 """
-HEX_PATTERN=re.compile(r'^[0-9a-z]+$')
+HEX_PATTERN = re.compile(r'^[0-9a-z]+$')
 TOKEN_PATTERN = r'<input type="hidden" name="' + TOKEN_FIELD_NAME + '" value="{token}"/>'
 TOKEN_SEARCH_PATTERN = re.compile(TOKEN_PATTERN.format(token=r'([0-9a-f]+)'))
 API_URL = re.compile(r'^/api\b.*')
 
 
 log = logging.getLogger(__name__)
-
 
 
 def _apply_token(html, token):
@@ -104,7 +103,8 @@ def _get_response_token(request, response):
 
 def create_response_token(response):
     site_url = parse.urlparse(config.get('ckan.site_url', ''))
-    import binascii, os
+    import binascii
+    import os
     token = binascii.hexlify(os.urandom(32)).decode('ascii')
     if site_url.scheme == 'https':
         log.debug("Securing CSRF token cookie for site %s", site_url)
@@ -123,13 +123,10 @@ def csrf_fail(message):
     abort(403, "Your form submission could not be validated")
 
 
-
-
 def after_request_function(response):
     resp = response
-    #else:
-    #    return response
-    if 'text/html' in resp.headers.get('Content-type', ''):
+    # direct_passthrough is set when a file is being downloaded, we do not need to apply a token for file downloads
+    if response.direct_passthrough == False and 'text/html' in resp.headers.get('Content-type', ''):
         token = _get_response_token(request, resp)
         new_response = _apply_token(resp.get_data(as_text=True), token)
         resp.set_data(new_response)
@@ -138,17 +135,21 @@ def after_request_function(response):
     else:
         return response
 
+
 def is_valid():
     return is_safe() or unsafe_request_is_valid()
 
+
 def unsafe_request_is_valid():
     return check_token()
+
 
 def is_secure():
     # allow requests which have the x-forwarded-proto of https (inserted by nginx)
     if request.headers.get('X-Forwarded-Proto') == 'https':
         return True
     return request.scheme == 'https'
+
 
 def is_safe():
     "Check if the request is 'safe', if the request is safe it will not be checked for csrf"
@@ -159,6 +160,7 @@ def is_safe():
     # get/head/options/trace are exempt from csrf checks
     return request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE')
 
+
 def good_referer():
     "Returns true if the referrer is https and matching the host"
     if not request.headers.get('Referer'):
@@ -166,6 +168,7 @@ def good_referer():
     else:
         match = "https://{}".format(domain)
         return request.headers.get('Referer').startswith(match)
+
 
 def good_origin():
     """
@@ -181,6 +184,7 @@ def good_origin():
         match = "https://{}".format(domain)
         return origin.startswith(match)
 
+
 def _get_post_token():
     """Retrieve the token provided by the client. Or return None if not present
         This is normally a single 'token' parameter in the POST body.
@@ -188,7 +192,7 @@ def _get_post_token():
         it is also acceptable to provide the token as a query string parameter,
         if there is no POST body.
     """
-    if TOKEN_FIELD_NAME in  request.environ['werkzeug.request'].cookies:
+    if TOKEN_FIELD_NAME in request.environ['werkzeug.request'].cookies:
         return request.cookies['token']
     # handle query string token if there are no POST parameters
     # this is needed for the 'confirm-action' JavaScript module
@@ -211,6 +215,7 @@ def get_cookie_token():
         return request.cookies.get(TOKEN_FIELD_NAME)
     else:
         return None
+
 
 def check_token():
     log.debug("Checking token matches Token {}, cookie_token: {}".format(_get_post_token(), get_cookie_token()))
