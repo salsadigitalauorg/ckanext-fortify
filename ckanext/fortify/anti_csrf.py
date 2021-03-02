@@ -1,3 +1,4 @@
+import ipdb
 import ckan.lib.base as base
 from six.moves.urllib import parse
 
@@ -112,8 +113,9 @@ def create_response_token(response):
     else:
         log.warn("Site %s is not secure! CSRF token may be exposed!", site_url)
         secure_cookies = False
+    response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=secure_cookies, httponly=True)
     response.set_cookie(TOKEN_FIELD_NAME, token, secure=secure_cookies, httponly=True)
-    response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=True, httponly=True)
+    
     return token
 
 
@@ -127,6 +129,12 @@ def after_request_function(response):
     resp = response
     # direct_passthrough is set when a file is being downloaded, we do not need to apply a token for file downloads
     if response.direct_passthrough == False and 'text/html' in resp.headers.get('Content-type', ''):
+        # Workaround for config page
+        # config_option_update is trying to update token so we need to skip applying the token 
+        # to this form
+        # TODO: Fix me!
+        if request.endpoint in ('admin.config'):
+            return response
         token = _get_response_token(request, resp)
         new_response = _apply_token(resp.get_data(as_text=True), token)
         resp.set_data(new_response)
@@ -154,7 +162,7 @@ def is_secure():
 def is_safe():
     "Check if the request is 'safe', if the request is safe it will not be checked for csrf"
     # api requests are exempt from csrf checks
-    if request.path.startswith("/api"):
+    if request.path.startswith("/api") or request.endpoint in ('admin.config'):
         return True
 
     # get/head/options/trace are exempt from csrf checks
