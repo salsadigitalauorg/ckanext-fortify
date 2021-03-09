@@ -1,4 +1,3 @@
-import ipdb
 import ckan.lib.base as base
 from six.moves.urllib import parse
 
