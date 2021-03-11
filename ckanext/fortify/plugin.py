@@ -4,6 +4,7 @@ import ckan.plugins.toolkit as toolkit
 import logging
 
 from ckanext.fortify import helpers, validators, blueprint
+from ckanext.fortify.logic.auth import update as auth_update
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 
 config = toolkit.config
@@ -37,6 +38,8 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
     if asbool(config.get('ckan.fortify.block_html_resource_uploads', False)):
         plugins.implements(plugins.IUploader, inherit=True)
+        plugins.implements(plugins.IAuthFunctions)
+
         # IUploader
 
         def get_resource_uploader(self, data_dict):
@@ -46,6 +49,17 @@ class FortifyPlugin(plugins.SingletonPlugin):
             else:
                 # Returning None will make sure it uses the CKAN default uploader ResourceUpload
                 return None
+
+        # IAuthFunctions
+
+        def get_auth_functions(self):
+            return {
+                'user_update': auth_update.user_update,
+                'organization_update': auth_update.organization_update,
+                'group_update': auth_update.group_update,
+            }
+
+
 
     if asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)) \
             or asbool(config.get('ckan.fortify.enable_password_policy', False)) \
