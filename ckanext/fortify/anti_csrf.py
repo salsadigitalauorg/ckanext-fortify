@@ -134,6 +134,9 @@ def after_request_function(response):
         # TODO: Fix me!
         if request.endpoint and request.endpoint in ('admin.config'):
             return response
+        # The request back from the saml2auth AD will never have the form token in it so lets ignore
+        if request.endpoint and request.endpoint in ('saml2auth.acs'):
+            return response
         token = _get_response_token(request, resp)
         new_response = _apply_token(resp.get_data(as_text=True), token)
         resp.set_data(new_response)
@@ -161,7 +164,9 @@ def is_secure():
 def is_safe():
     "Check if the request is 'safe', if the request is safe it will not be checked for csrf"
     # api requests are exempt from csrf checks
-    if request.path.startswith("/api") or (request.endpoint and request.endpoint in ('admin.config')):
+    if request.path.startswith("/api") \
+    or (request.endpoint and request.endpoint in ('admin.config')) \
+    or (request.endpoint and request.endpoint in ('saml2auth.acs')):
         return True
 
     # get/head/options/trace are exempt from csrf checks
