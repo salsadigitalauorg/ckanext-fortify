@@ -14,5 +14,6 @@ def fortify_organization_create(next_auth, context, data_dict):
 
 
 @toolkit.chained_auth_function
+@toolkit.auth_allow_anonymous_access
 def fortify_user_create(next_auth, context, data_dict):
     return helpers.disallow_non_image_uploads(next_auth, context, data_dict)
