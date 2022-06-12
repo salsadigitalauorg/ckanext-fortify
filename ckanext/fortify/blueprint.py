@@ -25,6 +25,7 @@ h = toolkit.h
 _ = toolkit._
 config = toolkit.config
 asbool = toolkit.asbool
+abort = toolkit.abort
 
 fortify = Blueprint(u'fortify', __name__)
 
@@ -134,7 +135,7 @@ if asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
             rsc = get_action(u'resource_show')(context, {u'id': resource_id})
             get_action(u'package_show')(context, {u'id': id})
         except (NotFound, NotAuthorized):
-            return base.abort(404, _(u'Resource not found'))
+            return abort(404, _(u'Resource not found'))
 
         if rsc.get(u'url_type') == u'upload':
             upload = uploader.get_resource_uploader(rsc)
@@ -148,7 +149,7 @@ if asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
                 return flask.send_file(filepath)
             # Fortify updates end
         elif u'url' not in rsc:
-            return base.abort(404, _(u'No download is available'))
+            return abort(404, _(u'No download is available'))
         return h.redirect_to(rsc[u'url'])
 
     fortify.add_url_rule(
