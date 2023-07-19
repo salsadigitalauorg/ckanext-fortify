@@ -11,10 +11,6 @@ CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
 
 domain = config.get('ckan.fortify.csrf_domain', '')
 
-RAW_RENDER = base.render
-RAW_RENDER_JINJA = base.render_jinja2
-#RAW_BEFORE = base.BaseController.__before__
-
 """ Used as the cookie name and input field name.
 """
 TOKEN_FIELD_NAME = 'token'
