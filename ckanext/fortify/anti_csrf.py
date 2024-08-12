@@ -1,4 +1,5 @@
 import ckan.lib.base as base
+from ckan.plugins import toolkit as tk
 from six.moves.urllib import parse
 
 import re
@@ -11,9 +12,10 @@ CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
 
 domain = config.get('ckan.fortify.csrf_domain', '')
 
-RAW_RENDER = base.render
-RAW_RENDER_JINJA = base.render_jinja2
-#RAW_BEFORE = base.BaseController.__before__
+# DEPRECATED ?!
+# RAW_RENDER = tk.render
+# RAW_RENDER_JINJA = tk.render
+# RAW_BEFORE = base.BaseController.__before__
 
 """ Used as the cookie name and input field name.
 """
