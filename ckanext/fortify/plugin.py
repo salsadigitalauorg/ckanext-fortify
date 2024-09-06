@@ -10,12 +10,21 @@ from ckanext.fortify.logic.auth import (
 )
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 
+try:
+    config_declarations = toolkit.blanket.config_declarations
+except AttributeError:
+    # CKAN 2.9 does not have config_declarations.
+    # Remove when dropping support.
+    def config_declarations(cls):
+        return cls
+
 config = toolkit.config
 ValidationError = toolkit.ValidationError
 asbool = toolkit.asbool
 log = logging.getLogger(__name__)
 
 
+@config_declarations
 class FortifyPlugin(plugins.SingletonPlugin):
 
     if asbool(config.get('ckan.fortify.check_parent_org_allowed', False)):
@@ -25,7 +34,7 @@ class FortifyPlugin(plugins.SingletonPlugin):
         def create(self, entity):
             user = toolkit.g.userobj
 
-            if authz.is_sysadmin(user.name):
+            if toolkit.current_user and toolkit.current_user.sysadmin:
                 return
 
             parents = entity.get_parent_group_hierarchy('organization')
