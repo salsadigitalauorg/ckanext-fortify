@@ -19,7 +19,7 @@ REPEATING_CHAR_ERROR = 'Passwords must not contain repeating values.'
 def user_password_validator(key, data, errors, context):
     # Don't perform this validation under certain conditions, i.e. adding a new member to an organisation
     blueprint, action = get_endpoint()
-    if get_endpoint()[0] in ['organization'] and get_endpoint()[1] in ['member_new']:
+    if blueprint in ['organization'] and action in ['member_new']:
         return
 
     value = data[key]

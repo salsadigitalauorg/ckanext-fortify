@@ -1,0 +1,32 @@
+version: 1
+groups:
+  - annotation: ckanext-fortify
+    options:
+      - key: ckan.fortify.enable_anti_csrf_tokens
+        type: bool
+        default: True
+        description: Enable anti-CSRF tokens
+      - key: ckan.fortify.enable_password_policy
+        type: bool
+        default: True
+        description: Enable password policy
+      - key: ckan.fortify.password_policy.min_length
+        type: int
+        default: 12
+        description: Minimum password length
+      - key: ckan.fortify.password_policy.allow_repeated_chars
+        type: bool
+        default: True
+        description: Allow repeated characters in passwords
+      - key: ckan.fortify.check_parent_org_allowed
+        type: bool
+        default: True
+        description: Check if parent organization is allowed
+      - key: ckan.fortify.block_html_resource_uploads
+        type: bool
+        default: True
+        description: Block HTML resource uploads
+      - key: ckan.fortify.force_html_resource_downloads
+        type: bool
+        default: True
+        description: Force HTML resource downloads
