@@ -4,6 +4,7 @@ import ckan.model as model
 import ckan.lib.mailer as mailer
 import ckan.lib.navl.dictization_functions as dictization_functions
 import ckan.lib.uploader as uploader
+from ckan.lib import signals
 import flask
 
 from ckan.views.user import PerformResetView
@@ -156,7 +157,11 @@ if asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
                 # This will set the header headers.add('Content-Disposition', 'attachment', filename=attachment_filename)
                 return flask.send_file(filepath, mimetype=upload.mimetype, as_attachment=True, attachment_filename=filename)
             else:
-                return flask.send_file(filepath)
+                resp = flask.send_file(filepath, download_name=filename)
+                if rsc.get('mimetype'):
+                    resp.headers['Content-Type'] = rsc['mimetype']
+                signals.resource_download.send(resource_id)
+                return resp
             # Fortify updates end
         elif u'url' not in rsc:
             return abort(404, _(u'No download is available'))
