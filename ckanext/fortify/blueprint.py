@@ -8,7 +8,6 @@ from ckan.lib import signals
 import flask
 
 from ckan.views.user import PerformResetView
-from flask.views import MethodView
 from six import text_type
 from ckanext.fortify import validators, anti_csrf
 
