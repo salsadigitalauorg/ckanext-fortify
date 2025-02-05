@@ -3,7 +3,7 @@ name = "ckanext-fortify"
 version = "3.0.1"
 description = "CKAN extension for QDES"
 authors = [
-	{name = "Salsa Digital", email = ""},
+	{name = "Salsa Digital", email = "developers@salsa.digital"},
 	]
 maintainers = [
 	{name = "Mark Calvert", email = "mark.calvert@salsa.digital"},
@@ -38,4 +38,4 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project.entry-points."ckan.plugins"]
-fortify=ckanext.fortify.plugin:FortifyPlugin
+fortify="ckanext.fortify.plugin:FortifyPlugin"
