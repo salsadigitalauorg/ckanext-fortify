@@ -67,13 +67,13 @@ class FortifyPlugin(plugins.SingletonPlugin):
         def get_auth_functions(self):
             return {
                 # Create auth function overrides
-                'group_create': auth_create.fortify_group_create,
-                'organization_create': auth_create.fortify_organization_create,
-                'user_create': auth_create.fortify_user_create,
+                #'group_create': auth_create.fortify_group_create,
+                #'organization_create': auth_create.fortify_organization_create,
+                #'user_create': auth_create.fortify_user_create,
                 # Update auth function overrides
-                'group_update': auth_update.fortify_group_update,
-                'organization_update': auth_update.fortify_organization_update,
-                'user_update': auth_update.fortify_user_update,
+                #'group_update': auth_update.fortify_group_update,
+                #'organization_update': auth_update.fortify_organization_update,
+                #'user_update': auth_update.fortify_user_update,
             }
 
     if asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)) \
