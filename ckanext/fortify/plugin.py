@@ -3,11 +3,8 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import logging
 
-from ckanext.fortify import helpers, validators, blueprint
-from ckanext.fortify.logic.auth import (
-    create as auth_create,
-    update as auth_update
-)
+from ckanext.fortify import validators, blueprint
+
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
 
 try:
