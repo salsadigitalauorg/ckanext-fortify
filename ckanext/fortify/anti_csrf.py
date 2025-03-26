@@ -1,5 +1,3 @@
-import ckan.lib.base as base
-from ckan.plugins import toolkit as tk
 from six.moves.urllib import parse
 
 import re

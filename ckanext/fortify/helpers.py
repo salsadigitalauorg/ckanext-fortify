@@ -1,9 +1,6 @@
 import ckan.authz as authz
 import logging
 
-from ckan.plugins.toolkit import config, asbool
-from ckanext.fortify import validators
-
 log = logging.getLogger(__name__)
 
 
