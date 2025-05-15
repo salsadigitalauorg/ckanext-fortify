@@ -154,7 +154,7 @@ if asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
             if upload.mimetype == 'text/html':
                 # Set as_attachment to force download
                 # This will set the header headers.add('Content-Disposition', 'attachment', filename=attachment_filename)
-                return flask.send_file(filepath, mimetype=upload.mimetype, as_attachment=True, attachment_filename=filename)
+                return flask.send_file(filepath, mimetype=upload.mimetype, as_attachment=True, download_name=filename)
             else:
                 resp = flask.send_file(filepath, download_name=filename)
                 if rsc.get('mimetype'):
