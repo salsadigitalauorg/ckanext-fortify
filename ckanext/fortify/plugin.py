@@ -5,7 +5,7 @@ import logging
 
 from ckanext.fortify import validators, blueprint
 
-from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES
+from werkzeug.datastructures import FileStorage as FlaskFileStorage
 
 try:
     config_declarations = toolkit.blanket.config_declarations
@@ -42,7 +42,8 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
                 if not role or role != 'admin':
                     raise ValidationError(
-                        {'parent': ['You do not belong to the selected parent organisation']}
+                        {'parent': [
+                            'You do not belong to the selected parent organisation']}
                     )
 
     if asbool(config.get('ckan.fortify.block_html_resource_uploads', False)):
@@ -52,12 +53,11 @@ class FortifyPlugin(plugins.SingletonPlugin):
 
         def get_resource_uploader(self, data_dict):
             upload = data_dict.get('upload', None)
-            if upload and isinstance(upload, ALLOWED_UPLOAD_TYPES) and upload.mimetype == 'text/html':
+            if upload and isinstance(upload, FlaskFileStorage) and upload.mimetype == 'text/html':
                 raise ValidationError({'upload': ['Invalid file type']})
             else:
                 # Returning None will make sure it uses the CKAN default uploader ResourceUpload
                 return None
-
 
     if asbool(config.get('ckan.fortify.enable_anti_csrf_tokens', False)) \
             or asbool(config.get('ckan.fortify.enable_password_policy', False)) \
