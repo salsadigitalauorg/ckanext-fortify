@@ -29,16 +29,15 @@ class FortifyPlugin(plugins.SingletonPlugin):
         # IOrganizationController
 
         def create(self, entity):
-            user = toolkit.g.userobj
 
-            if toolkit.current_user and toolkit.current_user.sysadmin:
+            if toolkit.current_user and authz.is_sysadmin(toolkit.current_user.name):
                 return
 
             parents = entity.get_parent_group_hierarchy('organization')
 
             if parents:
                 parent = parents[-1]
-                role = authz.users_role_for_group_or_org(parent.id, user.name)
+                role = authz.users_role_for_group_or_org(parent.id, toolkit.current_user.name if toolkit.current_user else None)
 
                 if not role or role != 'admin':
                     raise ValidationError(
